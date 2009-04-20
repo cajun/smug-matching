@@ -69,6 +69,19 @@ Shoes.app :title => 'Smug Games', :width => 800, :height => 800 do
         @tiles.clear
         load_tiles
       end
+      
+      para( link( 'About' ) ) do
+        dialog do
+          stack do
+            title 'Smug Games'
+            subtitle "Release Name"
+            subtitle bold "#{Shoes::RELEASE_NAME}"
+            subtitle "Version"
+            subtitle bold "#{Shoes::RELEASE_ID} :: #{Shoes::REVISION}"
+          end
+        end
+      end
+      
     end
     
     @links = para link( 'Visit SmugMug', :click => 'http://www.smugmug.com/' ),
