@@ -53,7 +53,7 @@ class Tile < Shoes::Widget
   end
 end
 
-Shoes.app do
+Shoes.app :title => 'Smug Games', :width => 800, :height => 800 do
   @tiles =[]
   won = false
   total_time = 0
@@ -66,6 +66,7 @@ Shoes.app do
       button 'Load Tiles' do
         total_time = 0
         won = false
+        @tiles.clear
         load_tiles
       end
     end
@@ -115,7 +116,7 @@ Shoes.app do
     
     @grid.clear if @grid 
     @grid.append do
-      flow do
+      a = flow do
         # make two images show in the list
         photos += photos
         photos.sort_by{ rand }.each do |photo|
