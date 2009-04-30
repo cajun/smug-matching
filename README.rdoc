@@ -1,0 +1,8 @@
+=== Simple tile matching game
+
+You can select a nick name from SmugMug, chose the size of the images to display and the number of images to display.
+
+When you are ready click on Load Tiles and a random gallery will be displayed.
+
+Enjoy 
+
