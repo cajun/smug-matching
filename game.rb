@@ -12,14 +12,30 @@ class Tile < Shoes::Widget
   def initialize( photo, args=nil )
     @@tiles << self
     @photo = photo
-    @tiny = image photo.tiny_url
     
-    self.width = 104
-    self.height = 104
+    @tiny = image photo.send( "#{args[:image_size]}_url" ), :align => 'center'
+    
+    @base_width = 100
+    @base_height = 100
+    
+    case args[:image_size]
+    when 'tiny'
+      @base_width = 100
+      @base_height = 100
+    when 'small'
+      @base_width = 400
+      @base_height = 300
+    when 'medium'
+      @base_width = 600
+      @base_height = 450
+    end
+    
+    self.width  = @base_width + 3
+    self.height = @base_height + 3
     
     @cover = image 'smuggy_bigger.jpg',
       :top => self.top, :left => self.left,
-      :width => 100, :height => 100
+      :width => @base_width, :height => @base_height
     
     @hidden = true
     @found = false
@@ -31,7 +47,7 @@ class Tile < Shoes::Widget
       match( tile_shown )
     end
   end
-
+  
   def uncovered
     @@tiles.select{ |t| !t.hidden && !t.found }
   end
@@ -44,6 +60,7 @@ class Tile < Shoes::Widget
     else
       timer( 1 ) do
         @@tiles.each do |t|
+          info t.found
           next if t.found 
           t.cover.show
           t.hidden = true
@@ -53,16 +70,32 @@ class Tile < Shoes::Widget
   end
 end
 
-Shoes.app :title => 'Smug Games', :width => 800, :height => 800 do
+Shoes.app :title => "Smug Games", 
+  :width => 800, :height => 800 do
   @tiles =[]
   won = false
   total_time = 0
   background black
+  @size = 'tiny'
+  @number_of_tiles = 'all'
+  
   stack do
     flow :align => 'center' do
       para 'Nick Name ( e.g. kleinpeter) ', :stroke => white
       @nick = edit_line :text => 'kleinpeter'
-  
+    end
+    
+    flow :align => 'center' do
+      para 'Tile Size'
+      list_box :items => %w{ tiny small medium } do |item|
+        @size = item.text
+      end
+      
+      para 'Max Number of Tiles'
+      list_box :items => %w{ 2 10 20 30 all}, :choose => 'all' do |item|
+        @number_of_tiles = item.text
+      end
+      
       button 'Load Tiles' do
         total_time = 0
         won = false
@@ -70,17 +103,15 @@ Shoes.app :title => 'Smug Games', :width => 800, :height => 800 do
         load_tiles
       end
       
-      para( link( 'About' ) ) do
+      para link( 'About' , :click => Proc.new {
         dialog do
           stack do
-            title 'Smug Games'
-            subtitle "Release Name"
-            subtitle bold "#{Shoes::RELEASE_NAME}"
-            subtitle "Version"
-            subtitle bold "#{Shoes::RELEASE_ID} :: #{Shoes::REVISION}"
+            title 'Smug Games', :align => 'center'
+            subtitle "Shoes #{Shoes::RELEASE_NAME}", :align => 'center'
+            subtitle "Version #{Shoes::RELEASE_ID}.#{Shoes::REVISION}", :align => 'center'
           end
         end
-      end
+      })
       
     end
     
@@ -122,6 +153,10 @@ Shoes.app :title => 'Smug Games', :width => 800, :height => 800 do
     album = albums.sort_by{ rand }.first
     photos = album.photos
     
+    unless( @number_of_tiles == 'all' )
+      photos = photos[0, @number_of_tiles.to_i / 2 ]
+    end  
+    
     @links.replace(
           link( 'Visit SmugMug', :click => 'http://www.smugmug.com/' ), " ",
           link( "#{album.title} at SmugMug", :click => photos.first.album_url )
@@ -133,7 +168,7 @@ Shoes.app :title => 'Smug Games', :width => 800, :height => 800 do
         # make two images show in the list
         photos += photos
         photos.sort_by{ rand }.each do |photo|
-          @tiles << tile( photo, :margin => 2 )
+          @tiles << tile( photo, :margin => 5, :image_size => @size )
         end
       end
       
